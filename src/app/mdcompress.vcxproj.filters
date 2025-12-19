@@ -1,0 +1,219 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="libxdrfile">
+      <UniqueIdentifier>{48183ef2-8c4a-4f1b-a798-96b8fb81b346}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Refresh">
+      <UniqueIdentifier>{da097f12-61c7-4c0c-9d57-8bdeca4a47be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library Files">
+      <UniqueIdentifier>{e41e9f33-1333-4785-9ce4-e08b568f3f7d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mdc_compress.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="engine_compression.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libs\libxdrfile\xdrfile.c">
+      <Filter>libxdrfile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libs\libxdrfile\xdrfile_trr.c">
+      <Filter>libxdrfile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libs\libxdrfile\xdrfile_xtc.c">
+      <Filter>libxdrfile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libs\mimalloc\src\static.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mdc_lib\mdc_reader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\engine_decompression.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\mdc_decompress.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\serializer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="desc_builder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="params.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xtc_reader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mdc_compress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="application.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine_compression.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xtc_writer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\range_coder\lib\rc.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\range_coder\lib\rc_coders.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\range_coder\lib\rc_context.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\range_coder\lib\rc_engine.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\range_coder\lib\rc_meta_switch.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\range_coder\lib\rc_models.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\range_coder\lib\rc_utils.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\parallel_queues\lib\parallel-queues.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\parallel_queues\lib\parallel-queues-common.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\archive\lib\archive_common.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\archive\lib\archive_input.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\archive\lib\archive_output.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\archive\lib\input_common.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\archive\lib\input_file_buffered.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\archive\lib\input_file_unbuffered.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\archive\lib\input_stdin_memory.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\archive\lib\io_utils.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\archive\lib\output_common.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\archive\lib\output_file_buffered.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\archive\lib\output_file_unbuffered.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\refresh\archive\lib\output_stdout_memory.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libs\libxdrfile\xdrfile.h">
+      <Filter>libxdrfile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libs\libxdrfile\xdrfile_trr.h">
+      <Filter>libxdrfile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libs\libxdrfile\xdrfile_xtc.h">
+      <Filter>libxdrfile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mdc_lib\mdc_reader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\engine_decompression.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\mdc_decompress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\serializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\engine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\mdc_abstract.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\frame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\vec3d.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="traj_reader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="input_reader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="defs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="output_writer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libs\refresh\compression\lib\lzss_basic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libs\refresh\compression\lib\lzss_compress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libs\refresh\compression\lib\lzss_decompress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libs\refresh\string_operations\lib\string_operations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="desc_builder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libs\refresh\fp_float\lib\fp_float.h">
+      <Filter>Refresh</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

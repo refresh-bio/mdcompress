@@ -1,0 +1,315 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      do_release:
+        description: "Create tag + GitHub Release"
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+jobs:
+  build-linux:
+    name: build-linux (${{ matrix.name }})
+    runs-on: ${{ matrix.runner }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: gcc-12-linux-x64
+            runner: [self-hosted, linux, X64]
+            gcc: 12
+          - name: gcc-13-linux-x64
+            runner: [self-hosted, linux, X64]
+            gcc: 13
+          - name: gcc-14-linux-x64
+            runner: [self-hosted, linux, X64]
+            gcc: 14
+          - name: gcc-15-linux-x64
+            runner: [self-hosted, linux, X64]
+            gcc: 15
+            
+          - name: gcc-12-linux-arm64
+            runner: [self-hosted, linux, ARM64, mdcompress]
+            gcc: 12
+          - name: gcc-13-linux-arm64
+            runner: [self-hosted, linux, ARM64, mdcompress]
+            gcc: 13
+          - name: gcc-14-linux-arm64
+            runner: [self-hosted, linux, ARM64, mdcompress]
+            gcc: 14
+          - name: gcc-15-linux-arm64
+            runner: [self-hosted, linux, ARM64, mdcompress]
+            gcc: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Mark workspace as safe for Git
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Select compiler
+        run: |
+          echo "CC=gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
+          echo "CXX=g++-${{ matrix.gcc }}" >> $GITHUB_ENV
+          echo "Using GCC ${{ matrix.gcc }} (job: ${{ matrix.name }})"
+
+      - name: Show compiler version
+        run: |
+          $CC --version
+          $CXX --version
+
+      - name: Compile
+        run: |
+          make -j
+
+  build-macos:
+    name: build-macos (${{ matrix.name }})
+    runs-on: ${{ matrix.runner }}
+    
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: g++-12-macos-x64
+            gcc: 12 
+            runner: [self-hosted, macOS, X64, mdcompress] 
+          - name: g++-13-macos-x64
+            gcc: 13
+            runner: [self-hosted, macOS, X64, mdcompress] 
+          - name: g++-14-macos-x64
+            gcc: 14
+            runner: [self-hosted, macOS, X64, mdcompress] 
+
+          - name: g++-12-macos-arm
+            gcc: 12 
+            runner: [self-hosted, macOS, ARM64, mdcompress] 
+          - name: g++-13-macos-arm
+            gcc: 13
+            runner: [self-hosted, macOS, ARM64, mdcompress] 
+          - name: g++-14-macos-arm
+            gcc: 14
+            runner: [self-hosted, macOS, ARM64, mdcompress] 
+
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Mark workspace as safe for Git
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          
+      - name: Select compiler
+        run: |
+          echo "CC=gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
+          echo "CXX=g++-${{ matrix.gcc }}" >> $GITHUB_ENV
+          echo "Using G++ ${{ matrix.gcc }} (job: ${{ matrix.name }})"
+
+      - name: Show compiler version
+        run: |
+          $CC --version
+          $CXX --version
+
+      - name: Compile
+        run: |
+          gmake CXX=$CXX CC=$CC -j mdcompress libmdc c_mdc_reader_example cpp_mdc_reader_example python_mdc_reader_example python_mdc
+
+      - name: Simple test
+        run: |
+          cd tests
+          ./test_1.py
+
+  build-win:
+    name: build-win (${{ matrix.name }})
+    runs-on: ${{ matrix.runner }}
+    
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: win-x64
+            runner: [self-hosted, Windows, X64, mdcompress] 
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'   # or whatever version you want
+
+      - name: Mark workspace as safe for Git
+        run: |
+          git config --global --add safe.directory "$env:GITHUB_WORKSPACE"
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Compile
+        run: |
+          msbuild mdcompress.sln /m /p:Configuration=Release /p:Platform=x64
+#          devenv mdcompress.sln /Build "Release|x64"
+        
+
+      - name: Simple test
+        run: |
+          cd tests
+          python test_1.py
+  
+  package:
+    name: package (${{ matrix.target }})
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.do_release == 'true'
+    needs: [build-linux, build-macos, build-win]
+    runs-on: ${{ matrix.runner }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-x64
+            runner: [self-hosted, linux, X64]
+          - target: linux-arm64
+            runner: [self-hosted, linux, ARM64, mdcompress]
+          - target: macos-x64
+            runner: [self-hosted, macOS, X64, mdcompress]
+          - target: macos-arm64
+            runner: [self-hosted, macOS, ARM64, mdcompress]
+          - target: win-x64
+            runner: [self-hosted, Windows, X64, mdcompress]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          clean: true
+
+      - name: Mark workspace as safe for Git (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Mark workspace as safe for Git (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          git config --global --add safe.directory "$env:GITHUB_WORKSPACE"
+
+      - name: Setup Python (Windows)
+        uses: actions/setup-python@v5
+        if: runner.os == 'Windows'
+        with:
+          python-version: '3.11'
+
+      - name: Build release artifacts (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          python3 ./build_release.py
+      
+      - name: Build release artifacts (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          python ./build_release.py
+
+      - name: Upload tarballs
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.target }}
+          path: |
+            mdcompress-*.tar.gz
+          retention-days: 3
+
+  publish:
+    name: publish
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.do_release == 'true'
+    needs: [package]
+    runs-on: [self-hosted, linux, X64]
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Show downloaded files
+        run: |
+          find dist -type f -maxdepth 3 -print
+
+      # Read version from src/common/version.h and expose it
+      - name: Read version from header
+        id: get_version
+        run: |
+          python3 - << 'EOF'
+          import pathlib, re, os, sys
+      
+          text = pathlib.Path("src/common/version.h").read_text()
+      
+          def find(name: str) -> str:
+              m = re.search(rf"{name}\s+(\d+)", text)
+              if not m:
+                  print(f"ERROR: Cannot find {name} in src/common/version.h")
+                  sys.exit(1)
+              return m.group(1)
+      
+          major = find("MDCOMPRESS_VERSION_MAJOR")
+          minor = find("MDCOMPRESS_VERSION_MINOR")
+          patch = find("MDCOMPRESS_VERSION_PATCH")
+      
+          version = f"{major}.{minor}.{patch}"
+          tag = f"v{version}"
+      
+          print(f"version={version}")
+          print(f"tag={tag}")
+      
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"version={version}\n")
+              f.write(f"tag={tag}\n")
+          EOF
+      
+      - name: Ensure tag does not already exist
+        run: |
+          git fetch --tags
+          if git rev-parse -q --verify "refs/tags/${{ steps.get_version.outputs.tag }}"; then
+            echo "Tag already exists: ${{ steps.get_version.outputs.tag }}"
+            exit 1
+          fi
+      
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.get_version.outputs.tag }}"
+          git push origin "${{ steps.get_version.outputs.tag }}"
+      
+      - name: Create GitHub Release (via gh)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.get_version.outputs.tag }}"
+          TITLE="mdcompress ${{ steps.get_version.outputs.version }}"
+      
+          gh release create "$TAG" dist/**/mdcompress-*.tar.gz \
+            --title "$TITLE" \
+            --notes ""

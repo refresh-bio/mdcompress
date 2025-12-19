@@ -1,0 +1,7 @@
+[package]
+name = "rust_mdc_reader_example"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rust_mdc = { path = "../../rust_mdc" } # For usage outside this repo use { git = "https://github.com/refresh-bio/mdcompress.git", subdir = "rust_mdc" }

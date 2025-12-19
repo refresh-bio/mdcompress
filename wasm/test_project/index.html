@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>MDCompress WASM Test</title>
+</head>
+
+<body>
+	<input type="file" id="filePicker" accept=".mdc">
+	Atom ids: <input type="text" id="inputAtomIds">
+	<div id="info"></div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+	<script src="libmdc.js"></script>
+	<script>
+
+	function seg_type_to_str(type) {
+		if (type === Module.segment_type.molecule)
+			return "molecule";
+		else if (type === Module.segment_type.other)
+			return "other";
+		else if (type === Module.segment_type.water)
+			return "water";
+		else if (type === Module.segment_type.unknown)
+			return "unknown";
+		else if (type === Module.segment_type.none)
+			return "none";
+	}
+
+	function generateColor(index, total) {
+		let hue = (index * 360 / total) % 360; // Distribute hues across 360 degrees
+		return `hsl(${hue}, 70%, 50%)`; // Keep saturation and lightness fixed for vibrant colors
+	}
+
+	function hslToHex(hslString) {
+		let hsl = hslString.match(/\d+/g).map(Number); // Extract H, S, L values
+		let [h, s, l] = [hsl[0] / 360, hsl[1] / 100, hsl[2] / 100];
+
+		function hueToRgb(p, q, t) {
+			if (t < 0) t += 1;
+			if (t > 1) t -= 1;
+			if (t < 1 / 6) return p + (q - p) * 6 * t;
+			if (t < 1 / 2) return q;
+			if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+			return p;
+		}
+
+		let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+		let p = 2 * l - q;
+		let r = Math.round(hueToRgb(p, q, h + 1 / 3) * 255);
+		let g = Math.round(hueToRgb(p, q, h) * 255);
+		let b = Math.round(hueToRgb(p, q, h - 1 / 3) * 255);
+
+		return (r << 16) | (g << 8) | b; // Convert to hexadecimal
+	}
+
+		let camera_settled = false;
+
+	function drawBox(boxMatrix, scene) {
+		
+		//I'm not sure how this box works exactly
+		// let boxOrigin = new THREE.Vector3(
+		// 	-boxMatrix[0][0] / 2, // Shift X
+		// 	-boxMatrix[1][1] / 2, // Shift Y
+		// 	-boxMatrix[2][2] / 2  // Shift Z
+		// );
+
+		let boxOrigin = new THREE.Vector3(
+			0, // Shift X
+			0, // Shift Y
+			0  // Shift Z
+		);
+
+		
+		let p1 = boxOrigin.clone().add(new THREE.Vector3(boxMatrix[0][0], 0, 0));   // X
+		let p2 = boxOrigin.clone().add(new THREE.Vector3(0, boxMatrix[1][1], 0));   // Y
+		let p3 = boxOrigin.clone().add(new THREE.Vector3(0, 0, boxMatrix[2][2]));   // Z
+		let p4 = boxOrigin.clone().add(new THREE.Vector3(boxMatrix[0][0], boxMatrix[1][1], 0));  // XY
+		let p5 = boxOrigin.clone().add(new THREE.Vector3(boxMatrix[0][0], 0, boxMatrix[2][2]));  // XZ
+		let p6 = boxOrigin.clone().add(new THREE.Vector3(0, boxMatrix[1][1], boxMatrix[2][2]));  // YZ
+		let p7 = boxOrigin.clone().add(new THREE.Vector3(boxMatrix[0][0], boxMatrix[1][1], boxMatrix[2][2])); // XYZ
+
+		// Define edges
+		let boxEdges = [
+			boxOrigin, p1, boxOrigin, p2, boxOrigin, p3,
+			p1, p4, p1, p5,
+			p2, p4, p2, p6,
+			p3, p5, p3, p6,
+			p4, p7, p5, p7, p6, p7
+		];
+
+		// Create wireframe
+		let geometry = new THREE.BufferGeometry().setFromPoints(boxEdges);
+		let material = new THREE.LineBasicMaterial({ color: 0xff0000 }); // Red color
+		let boxWireframe = new THREE.LineSegments(geometry, material);
+
+		// Remove old box if it exists
+		let oldBox = scene.getObjectByName("boxWireframe");
+		if (oldBox) scene.remove(oldBox);
+
+		// Add new box
+		boxWireframe.name = "boxWireframe";
+		scene.add(boxWireframe);
+	}
+
+		function drawAtoms(atomCoords, scene, camera, box, org_atom_ids_to_colors, selected_to_org_atom_ids) {
+			// Clear scene more efficiently (remove old group instead of looping)
+			let oldGroup = scene.getObjectByName("atomsGroup");
+			if (oldGroup) {
+				scene.remove(oldGroup);
+			}
+
+			//console.log("Rendering", atomCoords.length, "atoms");
+
+			let group = new THREE.Group();
+			group.name = "atomsGroup"; // Tagging for easy removal
+
+			let geometry = new THREE.SphereGeometry(0.3, 16, 16); // Reuse geometry
+
+			let minX = Infinity, minY = Infinity, minZ = Infinity;
+			let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+
+			for (let i = 0; i < atomCoords.length; i++) {
+				let [x, y, z] = atomCoords[i];
+
+				minX = Math.min(minX, x);
+				minY = Math.min(minY, y);
+				minZ = Math.min(minZ, z);
+				maxX = Math.max(maxX, x);
+				maxY = Math.max(maxY, y);
+				maxZ = Math.max(maxZ, z);
+
+				// Get correct color
+				let colorHex = org_atom_ids_to_colors[selected_to_org_atom_ids.get(i) - 1];
+
+				let material = new THREE.MeshBasicMaterial({ color: colorHex });
+				let sphere = new THREE.Mesh(geometry, material);
+				sphere.position.set(x, y, z);
+				group.add(sphere);
+			}
+
+			scene.add(group);
+			//console.log("Bounding box:", minX, minY, minZ, maxX, maxY, maxZ);
+			//console.log("box:", box);
+			drawBox(box, scene);
+
+			let centerX = (minX + maxX) / 2;
+			let centerY = (minY + maxY) / 2;
+			let centerZ = (minZ + maxZ) / 2;
+			if (!camera_settled){
+				camera_settled = true;
+				camera.position.set(centerX, centerY, maxZ + 180);
+				camera.lookAt(centerX, centerY, centerZ);
+			}
+		}
+
+		let scene, camera, renderer; // Declare globally
+
+		function initializeScene() {
+			if (!scene) {  // Only initialize once
+				scene = new THREE.Scene();
+				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				document.body.appendChild(renderer.domElement);
+
+				let light = new THREE.PointLight(0xffffff, 1, 100);
+				light.position.set(5, 5, 5);
+				scene.add(light);
+
+				let ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+				scene.add(ambientLight);
+
+				function animate() {
+					requestAnimationFrame(animate);
+					renderer.render(scene, camera);
+				}
+				animate();
+			}
+		}
+
+		// Ensure scene initializes only once
+		initializeScene();
+
+		Module.onRuntimeInitialized = function () {
+			console.log("libmdc.js (WASM) has initialized.");
+
+			const filePicker = document.getElementById('filePicker');
+			filePicker.addEventListener('change', (e) => {
+				const file = e.target.files[0];
+				if (!file) {
+					console.log("No file selected.");
+					return;
+				}
+
+				const reader = new FileReader();
+				reader.onload = function (evt) {
+					const arrayBuffer = evt.target.result;
+					const bytes = new Uint8Array(arrayBuffer);
+
+					Module.FS.writeFile("/uploaded.mdc", bytes);
+					console.log("Wrote file to Emscripten FS at /uploaded.mdc");
+
+					// Clear previous scene
+					while (scene.children.length > 0) {
+						scene.remove(scene.children[0]);
+					}
+
+					let reader = new Module.reader("/uploaded.mdc");
+					let text = "Number of frames: " + reader.get_no_frames();
+
+					let segments = reader.get_segments();
+					
+					let numSegments = segments.size();
+
+					let org_atom_ids_to_colors = [];
+					
+					for (let i = 0; i < segments.size(); i++)
+					{
+						let segmentColor = generateColor(1 - i, numSegments);
+						let hexColor = hslToHex(segmentColor);
+						let seg = segments.get(i); 
+						for (let j = 0; j < seg.size; j++) {
+							org_atom_ids_to_colors.push(hexColor);
+						}
+						console.log("Segment", i, ":", "name =", seg.name, "size =", seg.size, "type =", seg_type_to_str(seg.type));
+						text += "<br>";
+						//text += "Segment " + i + ": name = " + seg.name + ", size = " + seg.size + ", type = " + seg_type_to_str(seg.type);
+						text += `<span style="color:${segmentColor}">Segment ${i}: name = ${seg.name}, size = ${seg.size}, type = ${seg_type_to_str(seg.type)}</span>`;
+					}
+					document.getElementById('info').innerHTML = text;
+
+					let segmentIds = new Module.vec_str(); //empty means all
+
+					let atomIds = new Module.vec_u32();
+					
+					let atom_ids_txt = document.getElementById("inputAtomIds").value;
+					let atom_ids_arr = atom_ids_txt.split(",");
+					for (let i = 0; i < atom_ids_arr.length; i++) {
+						if (atom_ids_arr[i].includes("-")) {
+							let range = atom_ids_arr[i].split("-");
+							let start = parseInt(range[0]);
+							let end = parseInt(range[1]);
+							for (let j = start; j <= end; j++)
+								atomIds.push_back(j);
+						}
+						else if (parseInt(atom_ids_arr[i]) == atom_ids_arr[i])
+							atomIds.push_back(parseInt(atom_ids_arr[i]));
+					}
+
+					let engine = reader.get_query_engine(segmentIds, atomIds);
+
+					let selected_to_org_atom_ids = engine.get_original_atom_ids();
+
+					let noFrames = reader.get_no_frames();
+					console.log("Number of frames:", noFrames);
+
+					let queryResult = new Module.query_result();
+
+					let frameIds = new Module.vec_u32();
+					frameIds.push_back(0);
+
+					let frameId = 0;
+
+					function processFrame() {
+						console.log("Frame id:", frameId);
+						if (frameId >= noFrames) {
+							segmentIds.delete();
+							atomIds.delete();
+							reader.delete();
+							engine.delete(); // probably not needed because engine was unique_ptr on c++ side, so embind should handle this
+							frameIds.delete();
+
+							return;
+						}
+						frameIds.set(0, frameId);
+						if (!engine.query(frameIds, queryResult))
+						{
+							console.log("Error querying frame", frameId);
+							return;
+						}
+
+						//console.log("#frames: ", queryResult.frames.size());
+						
+						let coords = queryResult.frames.get(0).coords();
+						let nAtoms = queryResult.frames.get(0).n_coords;
+						let time = queryResult.frames.get(0).time;
+						let box = queryResult.frames.get(0).box;
+						//console.log(`Frame ${frameId}: Atoms ${nAtoms}, Time ${time}, Box ${box}`);
+						//console.log(`Coords: ${coords}`);
+						let atomCoords = [];
+
+						for (let i = 0 ; i < nAtoms; i++)
+						{
+							let baseIndex = (coords / 4) + i * 3;
+    
+							let x = Module.HEAPF32[baseIndex];
+							let y = Module.HEAPF32[baseIndex + 1];
+							let z = Module.HEAPF32[baseIndex + 2];
+
+							//if (i < 10)
+							//	console.log(`Atom ${i}: x=${x}, y=${y}, z=${z}`);
+
+							atomCoords.push([x, y, z]);
+						}
+						
+						drawAtoms(atomCoords, scene, camera, box, org_atom_ids_to_colors, selected_to_org_atom_ids);
+
+						//frameId++;
+						frameId += 1;
+						//setTimeout(processFrame, 100);
+						requestAnimationFrame(processFrame);
+						//console.log(`Frame ${frameId}: Atoms ${nAtoms}, Time ${time}`);
+						//console.log(`Frame ${frameId}: Time ${time}`);
+					}
+					
+					processFrame();
+					
+					
+					return;
+				};
+				reader.readAsArrayBuffer(file);  // triggers onload
+			});
+		};
+	</script>
+</body>
+
+</html>

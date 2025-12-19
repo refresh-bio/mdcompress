@@ -1,0 +1,15 @@
+[package]
+name = "rust_mdc"
+version = "0.1.0"
+edition = "2021"
+
+# If you want to build a library crate, keep [lib]. If you want a binary, use [bin].
+[lib]
+name = "rust_mdc"
+crate-type = ["rlib"]
+
+[dependencies]
+# (Add normal Rust dependencies if needed)
+
+[build-dependencies]
+cc = "1.0"
