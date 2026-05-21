@@ -7,6 +7,9 @@
 
 #ifdef _MSC_VER
 #include <mimalloc-override.h>
+#include <io.h>
+#else
+#include <unistd.h>
 #endif
 
 #include "application.h"
@@ -21,6 +24,16 @@
 #include "input_reader.h"
 #include "output_writer.h"
 #include "desc_builder.h"
+
+// *******************************************************************************
+static bool stderr_is_terminal()
+{
+#ifdef _MSC_VER
+    return _isatty(_fileno(stderr)) != 0;
+#else
+    return isatty(fileno(stderr)) != 0;
+#endif
+}
 
 // *******************************************************************************
 void CApplication::reduce_segment_desc_to_molecules_only()
@@ -691,18 +704,39 @@ bool CApplication::compress()
 
 	refresh::parallel_queue<std::vector<frame_t>> q_batches(4, 1, "q_batches");
 
+    const bool progress_is_tty = stderr_is_terminal();
+
     std::thread t_readed([&] {
         tc.acquire();
 
         std::vector<frame_t> batch;
 
+        uint64_t n_frames_read = 0;
+        int last_n_atoms = 0;
 
-        std::cerr << "Frame time: " << frame.desc.time << "\tNo. atoms: " << frame.desc.n_atoms << std::endl;
+        // Self-updating progress line (every 100 frames). On a terminal it
+        // rewrites a single line with '\r'; when redirected it prints a fresh
+        // line periodically so logs stay readable.
+        auto report_progress = [&](bool final) {
+            // terminal: rewrite a single line with '\r' (newline only at the end);
+            // redirected: emit one newline-terminated line per report.
+            std::cerr << (progress_is_tty ? "\r" : "")
+                      << "Completed frame " << n_frames_read
+                      << ", with number of atoms " << last_n_atoms
+                      << ((progress_is_tty && !final) ? "" : "\n");
+            std::cerr.flush();
+        };
+
+        ++n_frames_read;
+        last_n_atoms = frame.desc.n_atoms;
         batch.emplace_back(std::move(frame));
 
         while (input_reader->get_frame(frame)) {
 
-            std::cerr << "Frame time: " << frame.desc.time << "\tNo. atoms: " << frame.desc.n_atoms << std::endl;
+            ++n_frames_read;
+            last_n_atoms = frame.desc.n_atoms;
+            if (n_frames_read % 100 == 0)
+                report_progress(false);
 
             batch.emplace_back(std::move(frame));
             if (batch.size() > params.preset_values.anchor_separation())
@@ -715,6 +749,9 @@ bool CApplication::compress()
                 batch.clear();
             }
         }
+
+        report_progress(true);  // final count, terminates the line
+
         tc.release();
         if (!batch.empty())
             q_batches.push(std::move(batch));
@@ -1080,18 +1117,41 @@ bool CApplication::select() const
     using q_frames_t = refresh::parallel_priority_queue<mdc::query_result>;
     q_frames_t q_frames(tc.max_running() * 3, tc.max_running(), "q_frames");
 
+    const bool progress_is_tty = stderr_is_terminal();
+
     std::thread t_storer([&] {
         mdc::query_result result;
+
+        uint64_t n_frames_written = 0;
+        int last_n_atoms = 0;
+
+        // Self-updating progress line (every 100 frames); see compress() for details.
+        auto report_progress = [&](bool final) {
+            std::cerr << (progress_is_tty ? "\r" : "")
+                      << "Completed frame " << n_frames_written
+                      << ", with number of atoms " << last_n_atoms
+                      << ((progress_is_tty && !final) ? "" : "\n");
+            std::cerr.flush();
+        };
+
         while (q_frames.pop(result))
         {
             tc.acquire();
 
             output_writer->add_frames(result);
             for (uint32_t frame_id = 0; frame_id < result.frames.size(); ++frame_id)
-                std::cerr << "Frame time: " << result.frames[frame_id].time << "\tNo. atoms: " << result.frames[frame_id].coords.size() << std::endl;
+            {
+                ++n_frames_written;
+                last_n_atoms = (int)result.frames[frame_id].coords.size();
+                if (n_frames_written % 100 == 0)
+                    report_progress(false);
+            }
 
             tc.release();
         }
+
+        if (n_frames_written > 0)
+            report_progress(true);  // final count, terminates the line
         });
 
     std::vector<std::thread> decompr_threads;
@@ -1367,9 +1427,23 @@ bool CApplication::to_fp32()
 
     frame_t frame;
 
+    const bool progress_is_tty = stderr_is_terminal();
+    uint64_t n_frames_read = 0;
+    int last_n_atoms = 0;
+    auto report_progress = [&](bool final) {
+        std::cerr << (progress_is_tty ? "\r" : "")
+                  << "Completed frame " << n_frames_read
+                  << ", with number of atoms " << last_n_atoms
+                  << ((progress_is_tty && !final) ? "" : "\n");
+        std::cerr.flush();
+    };
+
     while (input_reader->get_frame(frame))
     {
-        std::cerr << "Frame time: " << frame.desc.time << "\tNo. atoms: " << frame.desc.n_atoms << std::endl;
+        ++n_frames_read;
+        last_n_atoms = frame.desc.n_atoms;
+        if (n_frames_read % 100 == 0)
+            report_progress(false);
 
         for (uint32_t i = 0; i < (uint32_t)frame.segments.size(); ++i)
         {
@@ -1380,6 +1454,9 @@ bool CApplication::to_fp32()
             }
         }
     }
+
+    if (n_frames_read > 0)
+        report_progress(true);  // final count, terminates the line
 
     fclose(f_fp32);
 
