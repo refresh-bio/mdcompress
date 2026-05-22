@@ -1,0 +1,44 @@
+name: Release Asset Table
+
+# Builds the "Release Assets" markdown table on the release page.
+#
+# Covers releases made by hand (web UI or `gh release create` from a
+# personal token), which fire a `release` event. Releases created by the
+# CI `publish` job use GITHUB_TOKEN, whose events GitHub suppresses, so
+# that path calls the same script directly from the publish job instead.
+#
+# The `workflow_dispatch` input lets you (re)build the table for any tag,
+# e.g. to backfill an older release whose body is empty.
+
+on:
+  release:
+    types: [published, edited]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to (re)build the asset table for (e.g. v1.0.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  update-table:
+    name: Update release asset table
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Update release asset table
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python .github/workflows/update_release_table.py "${{ github.event.release.tag_name || inputs.tag }}"

@@ -313,3 +313,13 @@ jobs:
           gh release create "$TAG" dist/**/mdcompress-*.tar.gz \
             --title "$TITLE" \
             --notes ""
+
+      # The release above is created with GITHUB_TOKEN, whose events GitHub
+      # suppresses, so the release-table.yml workflow will not fire for it.
+      # Build the asset table directly here instead. The script is stdlib-only
+      # (no pip needed) and idempotent.
+      - name: Add asset table to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 .github/workflows/update_release_table.py "${{ steps.get_version.outputs.tag }}"
