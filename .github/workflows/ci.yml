@@ -72,6 +72,11 @@ jobs:
         run: |
           make -j
 
+      - name: Simple test
+        run: |
+          cd tests
+          python3 test_1.py
+
   build-macos:
     name: build-macos (${{ matrix.name }})
     runs-on: ${{ matrix.runner }}
