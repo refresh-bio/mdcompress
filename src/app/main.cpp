@@ -58,14 +58,14 @@ void usage(int argc, char** argv)
     std::cerr << "Usage:\n";
     std::cerr << "mdcompress <mode> [options]\n";
     std::cerr << "Modes:\n";
-    std::cerr << "  compress    - compress a trajectory (XTC/TRR/DCD/... any chemfiles-supported format) into MDC format\n";
+    std::cerr << "  compress    - compress a trajectory (XTC/TRR/DCD/...) into MDC format\n";
     std::cerr << "  decompress  - decompress MDC file into a trajectory (XTC/TRR/DCD/...)\n";
     std::cerr << "  select      - decompress some frames from MDC file into a trajectory (XTC/TRR/DCD/...)\n";
     std::cerr << "  info        - info about contents of MDC file\n";
-    std::cerr << "  make_desc   - create description file (for -d) from a topology (TPR/PSF/PDB/...)\n";
+    std::cerr << "  make_desc   - create description file (for -d) from a topology (TPR/PSF/...)\n";
 
 	std::cerr << "Options - compress mode\n";
-    std::cerr << "  -i <file_name>               - input trajectory (XTC, TRR, DCD, and other chemfiles-supported formats)\n";
+    std::cerr << "  -i <file_name>               - input trajectory (XTC, TRR, DCD, ...)\n";
     std::cerr << "  -o <file_name>               - output file name (.mdc)\n";
     std::cerr << "  -d <file_name>               - description of the segments of a frame.\n"
                  "                                 May be omitted if --topology is given: mdcompress then\n"
@@ -73,7 +73,10 @@ void usage(int argc, char** argv)
     std::cerr << "  --topology <file_name>       - topology file (TPR, PSF, PDB, ...). It is stored inside the .mdc.\n"
                  "                                 If -d is not given, mdcompress infers the description from it.\n"
                  "                                 NOTE: coordinate-only trajectories (e.g. DCD) carry no topology,\n"
-                 "                                 so either -d or --topology must be provided for them.\n";
+                 "                                 so either -d or --topology must be provided for them.\n"
+                 "                                 NOTE 2: It may happen that mdcompress cannot build a description\n"
+                 "                                 from the file specified with the --topology switch;\n"
+                 "                                 in that case, -d must be provided.\n";
     std::cerr << "  --only-mol                   - compress only the molecule segments, skipping water/ions/other\n"
                  "                                 from the description/topology. Usually not needed: if the\n"
                  "                                 trajectory contains only molecules, mdcompress detects this and\n"
@@ -129,7 +132,7 @@ void usage(int argc, char** argv)
     std::cerr << "  --full                       - print full info (include subsegments)\n";
 
     std::cerr << "Options - make_desc mode\n";
-    std::cerr << "  -i <file_name>               - input topology file (TPR, PSF, PDB, ...)\n";
+    std::cerr << "  -i <file_name>               - input topology file (TPR, PSF, ...)\n";
     std::cerr << "  -o <file_name>               - output desc file name\n";
     std::cerr << "  --only-mol                   - include only molecule (skip water and 'other')\n";
 

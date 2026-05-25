@@ -52,17 +52,17 @@ sudo apt install make cmake build-essential python3 python3-dev rustc cargo git
 `mdcompress <mode> [options]`
 
 Modes:
-* `compress`         &ndash; compress a trajectory (XTC/TRR/DCD/... any chemfiles-supported format) into MDC format
+* `compress`         &ndash; compress a trajectory (XTC/TRR/DCD/...) into MDC format
 * `decompress`       &ndash; decompress MDC file into a trajectory (XTC/TRR/DCD/...)
 * `select`           &ndash; decompress some frames from MDC file into a trajectory (XTC/TRR/DCD/...)
 * `info`             &ndash; info about contents of MDC file
-* `make_desc`        &ndash; create description file (for -d) from a topology (TPR/PSF/PDB/...)
+* `make_desc`        &ndash; create description file (for -d) from a topology (TPR/PSF/...)
 
 Options - compress mode:
-* `-i <file_name>`               &ndash; input trajectory (XTC, TRR, DCD, and other chemfiles-supported formats)
+* `-i <file_name>`               &ndash; input trajectory (XTC, TRR, DCD, ...)
 * `-o <file_name>`               &ndash; output file name (`.mdc`)
 * `-d <file_name>`               &ndash; description of the segments of a frame. May be omitted if `--topology` is given, in which case mdcompress builds the description from the topology automatically.
-* `--topology <file_name>`       &ndash; topology file (TPR, PSF, PDB, ...). It is stored inside the `.mdc`. If `-d` is not given, mdcompress infers the description from it. Note: coordinate-only trajectories (e.g. DCD) carry no topology, so either `-d` or `--topology` must be provided for them.
+* `--topology <file_name>`       &ndash; topology file (TPR, PSF, PDB, ...). It is stored inside the `.mdc`. If `-d` is not given, mdcompress infers the description from it. Note: coordinate-only trajectories (e.g. DCD) carry no topology, so either `-d` or `--topology` must be provided for them. It may happen that mdcompress cannot build a description from the file specified with the `--topology` switch; in that case, `-d` must be provided.
 * `--only-mol`                   &ndash; compress only the molecule segments, skipping water/ions/other from the description/topology. Usually not needed: if the trajectory contains only molecules, mdcompress detects this and enables `--only-mol` automatically (with a warning).
 * _description check_            &ndash; whether `-d` or `--topology` is used, the description is validated against the trajectory's atom count before compressing: an exact match is used as-is; if only the molecules match, `--only-mol` is enabled automatically; if nothing matches, compression is aborted with an explanation and (when the description was inferred from a topology) a candidate is written to `<output>.candidate.desc` for you to edit and reuse with `-d`.
 * `-l <int>`                     &ndash; compression level
@@ -100,7 +100,7 @@ Options &ndash; info mode
 * `-i <file_name>`               &ndash; input file name
 
 Options &ndash; make_desc mode
-* `-i <file_name>`               &ndash; input topology file (TPR, PSF, PDB, ...)
+* `-i <file_name>`               &ndash; input topology file (TPR, PSF, ...)
 * `-o <file_name>`               &ndash; output desc file name
 * `--only-mol`                   &ndash; include only molecule (skip water and 'other')
 
@@ -155,7 +155,7 @@ and edit `topology.desc` as needed and pass it for compression with `-d` switch.
 
 ## A note on DCD (and other topology-less formats)
 DCD trajectories store only coordinates (and the box) - they contain no topology, atom names, or bonds.
-Because of this, the description cannot be inferred from a DCD file itself; you must provide segment information either with `-d` (a description file) or with `--topology` pointing to a real topology file (e.g. PSF or PDB) that describes the same atoms.
+Because of this, the description cannot be inferred from a DCD file itself; you must provide segment information either with `-d` (a description file) or with `--topology` pointing to a real topology file (e.g. TPR or PSF) that describes the same atoms.
 ```
 # Using a description file
 bin/mdcompress compress -i trajectory.dcd -d topology.desc -o out.mdc
