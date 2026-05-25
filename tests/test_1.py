@@ -6,7 +6,8 @@ import subprocess
 from pathlib import Path
 
 # Expected md5 of example.mdc
-EXPECTED_MD5 = "50ee763db617fb29b4c790758bf9e6bf"
+#EXPECTED_MD5 = "50ee763db617fb29b4c790758bf9e6bf" # that was for version 1.0.0 but we keep version in the mdc file
+EXPECTED_MD5 = "80a104baa0e397e4f4b3119e1"
 
 # Directory where this script lives
 HERE = Path(__file__).resolve().parent
