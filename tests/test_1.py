@@ -8,7 +8,7 @@ from pathlib import Path
 # Expected md5 of example.mdc
 #EXPECTED_MD5 = "50ee763db617fb29b4c790758bf9e6bf" # that was for version 1.0.0 but we keep version in the mdc file
 #EXPECTED_MD5 = "473782745f9dc076a6eff1f8a2f0c834" # for 2.0.0
-EXPECTED_MD5 = "cea368cc2da740652ec543c6a450d28e" # for 2.1.0
+EXPECTED_MD5 = "a256506cbf1443e2ec536b75ba897dc9" # for 2.0.1
 
 # Directory where this script lives
 HERE = Path(__file__).resolve().parent
