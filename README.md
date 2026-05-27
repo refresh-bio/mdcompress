@@ -14,8 +14,11 @@ make -j
 # MacOS compilation (must specify g++ compiler)
 gmake mdcompress CXX=g++-13 CC=gcc-13 -j
 
-# Example: compression of XTC file
-bin/mdcompress compress -i examples/data/example.xtc -d examples/data/example.desc -o example.mdc
+# Example: compression of XTC file using TPR file
+bin/mdcompress compress -i examples/data/example.xtc --topology examples/data/example.tpr -o example.mdc
+
+# Alternative using a simple text file describing topology (-d)
+# bin/mdcompress compress -i examples/data/example.xtc -d examples/data/example.desc -o example.mdc
 
 # Show info 
 bin/mdcompress info -i example.mdc
