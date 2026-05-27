@@ -66,15 +66,11 @@ namespace {
                 res.type = internal_segment_desc::segment_type::other;
                 res.group_id = get_group_id(other_map, mol_name);
             }
-            else if (natom > 1000) {
-                res.type = internal_segment_desc::segment_type::mol;
-                res.group_id = get_group_id(mol_map, mol_name);
-            }
             else if (natom > 30 && natom < 120 && mol_count > 50) {
                 res.type = internal_segment_desc::segment_type::lip;
                 res.group_id = get_group_id(lip_map, mol_name);
             }
-            else if (natom > 3 && natom < 300) {
+            else if (natom > 3) {
                 res.type = internal_segment_desc::segment_type::mol;
                 res.group_id = get_group_id(mol_map, mol_name);
             }
