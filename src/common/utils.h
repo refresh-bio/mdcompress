@@ -62,6 +62,16 @@ T idiv(T x, T y)
 
 enum class traj_file_format_t {unknown, trr, xtc, tng, mdc, nc, gro, dcd};
 
+constexpr std::vector<std::string> list_of_supported_input_formats_for_compression()
+{
+	return { "trr", "xtc", "tng","nc", "gro", "dcd" };
+}
+
+constexpr std::vector<std::string> list_of_supported_output_formats_for_decompression()
+{
+	return { "trr", "xtc", "nc", "gro", "dcd" };
+}
+
 constexpr traj_file_format_t get_traj_format(const std::string& fn, bool for_output)
 {
 	if (fn.empty())

@@ -530,6 +530,16 @@ bool CApplication::compress()
     std::unique_ptr<InputReader> input_reader;
     auto traj_format = get_traj_format(params.input_fn, false);
 
+    if (traj_format == traj_file_format_t::unknown)
+    {
+		std::cerr << "Error: unsupported input trajectory format for file '" << params.input_fn << "'.\n";
+		std::cerr << "List of currently supported formats:\n";
+		const auto& supported_formats = list_of_supported_input_formats_for_compression();
+		for (const auto& format : supported_formats)
+			std::cerr << "  - " << format << "\n";
+	    return false;
+    }
+
 #if defined(USE_CHEMFILES) && defined(USE_XDRFILE)
     if (params.native_lib_mode)
     {
@@ -1077,6 +1087,16 @@ bool CApplication::select() const
     std::unique_ptr<OutputWriter> output_writer;
 
     auto traj_format = get_traj_format(params.output_fn, true);
+
+    if (traj_format == traj_file_format_t::unknown)
+    {
+		std::cerr << "Error: unsupported output trajectory format for file '" << params.output_fn << "'.\n";
+		std::cerr << "List of currently supported formats:\n";
+		const auto& supported_formats = list_of_supported_output_formats_for_decompression();
+		for (const auto& format : supported_formats)
+			std::cerr << "  - " << format << "\n";
+		return false;
+    }
 
 #if defined(USE_CHEMFILES) && defined(USE_XDRFILE)
     if (params.native_lib_mode)
