@@ -212,8 +212,10 @@ define ADD_CHEMFILES
 	$(eval PREBUILD_JOBS+=chemfiles)
 
 	$(eval chemfiles: $(CHEMFILES_A))
-	$(eval $(CHEMFILES_A) : ; \
+	$(eval .PHONY: chemfiles_build_force)
+	$(eval chemfiles_build_force: ; \
 		mkdir -p $(CHEMFILES_DIR)/build && cd $(CHEMFILES_DIR)/build && cmake -DCMAKE_CXX_FLAGS="-DCHEMFILES_DONT_USE_MMAP" $(CMAKE_OSX_FIX) -DCMAKE_CXX_COMPILER=$(CXX) -DCMAKE_C_COMPILER=$(CC) .. && cmake --build . -j)
+	$(eval $(CHEMFILES_A) : chemfiles_build_force)
 endef
 
 # Add Pybind11
