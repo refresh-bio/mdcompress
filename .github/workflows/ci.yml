@@ -156,7 +156,7 @@ jobs:
 
     steps:
       - name: Clean workspace
-        shell: pwsh
+        shell: powershell
         run: Get-ChildItem -Path $env:GITHUB_WORKSPACE -Force | Remove-Item -Recurse -Force
 
       - name: Checkout repository
