@@ -216,7 +216,7 @@ jobs:
 
       - name: Clean workspace (Windows)
         if: runner.os == 'Windows'
-        shell: pwsh
+        shell: powershell
         run: Get-ChildItem -Path $env:GITHUB_WORKSPACE -Force | Remove-Item -Recurse -Force
 
       - uses: actions/checkout@v4
