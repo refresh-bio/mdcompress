@@ -48,10 +48,14 @@ jobs:
             gcc: 15
 
     steps:
+      - name: Clean workspace
+        shell: bash
+        run: shopt -s dotglob && rm -rf "$GITHUB_WORKSPACE"/*
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: false
+          submodules: recursive
 
       - name: Mark workspace as safe for Git
         run: |
@@ -80,7 +84,6 @@ jobs:
   build-macos:
     name: build-macos (${{ matrix.name }})
     runs-on: ${{ matrix.runner }}
-    
 
     strategy:
       fail-fast: false
@@ -106,12 +109,15 @@ jobs:
             gcc: 14
             runner: [self-hosted, macOS, ARM64, mdcompress] 
 
-
     steps:
+      - name: Clean workspace
+        shell: bash
+        run: shopt -s dotglob && rm -rf "$GITHUB_WORKSPACE"/*
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: false
+          submodules: recursive
 
       - name: Mark workspace as safe for Git
         run: |
@@ -140,7 +146,6 @@ jobs:
   build-win:
     name: build-win (${{ matrix.name }})
     runs-on: ${{ matrix.runner }}
-    
 
     strategy:
       fail-fast: false
@@ -150,6 +155,10 @@ jobs:
             runner: [self-hosted, Windows, X64, mdcompress] 
 
     steps:
+      - name: Clean workspace
+        shell: pwsh
+        run: Get-ChildItem -Path $env:GITHUB_WORKSPACE -Force | Remove-Item -Recurse -Force
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -163,6 +172,7 @@ jobs:
       - name: Mark workspace as safe for Git
         run: |
           git config --global --add safe.directory "$env:GITHUB_WORKSPACE"
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
@@ -199,10 +209,19 @@ jobs:
             runner: [self-hosted, Windows, X64, mdcompress]
 
     steps:
+      - name: Clean workspace (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: shopt -s dotglob && rm -rf "$GITHUB_WORKSPACE"/*
+
+      - name: Clean workspace (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Get-ChildItem -Path $env:GITHUB_WORKSPACE -Force | Remove-Item -Recurse -Force
+
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-          clean: true
 
       - name: Mark workspace as safe for Git (Unix)
         if: runner.os != 'Windows'
@@ -248,10 +267,14 @@ jobs:
       contents: write
 
     steps:
+      - name: Clean workspace
+        shell: bash
+        run: shopt -s dotglob && rm -rf "$GITHUB_WORKSPACE"/*
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: false
+          submodules: recursive
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
