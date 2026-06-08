@@ -1,6 +1,7 @@
 MDCompress
 =
-MDCompress is a compressor of Molecular Dynamics files stored in the XTC and other formats (XTC, TRR, DCD, ...). MDCompress uses [chemfiles](https://github.com/chemfiles/chemfiles) for reading during compression and for writing during decompression, so each format that is supported by chemfiles is also supported by MDCompress.
+MDCompress is a compressor of Molecular Dynamics files stored in the XTC and other formats (XTC, TRR, DCD, ...). MDCompress uses [chemfiles](https://github.com/chemfiles/chemfiles) for reading during compression and for writing during decompression.
+MDCompress was published in bioinformatics: https://academic.oup.com/bioinformatics/article/42/4/btag176/8651105
 
 ## Quick start
 To compile mdcompress g++ compiler (at least g++-12 is required) for both Linux and mac os (for mac os we advise to use g++ installed with [homebrew](https://brew.sh/).
