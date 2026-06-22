@@ -11,6 +11,7 @@ from pathlib import Path
 #EXPECTED_MD5 = "a256506cbf1443e2ec536b75ba897dc9" # for 2.0.1
 #EXPECTED_MD5 = "21b3e97c8aa87c7e156a1883cef83699" # for 2.0.2
 EXPECTED_MD5 = "6538947bed991d35db21b79ad99d3d1e"  # for 2.0.3
+EXPECTED_MD5 = "1a5d2494511e6c2fdcfafc6e00e3098c"  # for 2.0.4
 
 # Directory where this script lives
 HERE = Path(__file__).resolve().parent
