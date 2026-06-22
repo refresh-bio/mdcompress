@@ -4,7 +4,7 @@
 #define MDCOMPRESS_VERSION_MINOR 0
 #define MDCOMPRESS_VERSION_PATCH 4
 
-#define MDCOMPRESS_DATE "2026-06-08"
+#define MDCOMPRESS_DATE "2026-06-22"
 
 
 inline void MDCOMPRESS_VER_PRINT(std::ostream& oss) {
