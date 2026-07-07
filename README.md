@@ -178,3 +178,11 @@ Example:
 ```
 mdcompress select -i example.mdc -o atoms2000-2100_and_3000.xtc --atoms 2000-2100,3000
 ```
+
+## Citing
+
+Kokot, M., Roy, A., Wheeler, T.J., Deorowicz, S. (2026) MDCompress: better, faster compression of molecular dynamics simulation trajectories. Bioinformatics, Volume 42, Issue 4, April 2026, btag176, DOI: [https://doi.org/10.1038/s41587-026-03095-3](https://doi.org/10.1093/bioinformatics/btag176)
+
+## Funding
+This work was supported by the National Science Centre, Poland, project [DEC-2022/45/B/ST6/03032].
+
