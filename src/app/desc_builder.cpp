@@ -70,15 +70,20 @@ namespace {
                 res.type = internal_segment_desc::segment_type::lip;
                 res.group_id = get_group_id(lip_map, mol_name);
             }
-            else if (natom > 3) {
+            else if (natom >= 2) {
+                // Any fragment of two or more atoms that isn't water or lipid is
+                // treated as a molecule. This also covers small (2- or 3-atom)
+                // fragments that arise when an input topology has incomplete
+                // connectivity (e.g. a PDB missing some CONECT records), which
+                // would otherwise abort compression outright.
                 res.type = internal_segment_desc::segment_type::mol;
                 res.group_id = get_group_id(mol_map, mol_name);
             }
             else {
-                throw std::runtime_error(
-                    "unknown type when classifying atoms, #atoms = " +
-                    std::to_string(natom) + ", mol_count = " + std::to_string(mol_count)
-                );
+                // natom == 0 should be unreachable (every connected component has
+                // at least one atom), but fall back to "other" rather than throw.
+                res.type = internal_segment_desc::segment_type::other;
+                res.group_id = get_group_id(other_map, mol_name);
             }
 
             return res;
