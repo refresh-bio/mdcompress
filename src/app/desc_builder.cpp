@@ -75,10 +75,8 @@ namespace {
                 res.group_id = get_group_id(mol_map, mol_name);
             }
             else {
-                throw std::runtime_error(
-                    "unknown type when classifying atoms, #atoms = " +
-                    std::to_string(natom) + ", mol_count = " + std::to_string(mol_count)
-                );
+                res.type = internal_segment_desc::segment_type::other;
+                res.group_id = get_group_id(other_map, mol_name);
             }
 
             return res;
@@ -247,6 +245,24 @@ vector<segment_desc_t> build_desc(const string& trajectory_path)
         // Push the last segment
         internal_result.emplace_back(current);
 
+        // as the result of above, we may end-up having "broken" molecules (for example by "other") and one of this may be 1 or 2 atoms but still as molecule
+        // so first we change the type of such molecules to other
+        // and then merge again adjecent "others"
+
+        for (auto& desc : internal_result)
+            if (desc.type == internal_segment_desc::segment_type::mol && desc.size <= 2)
+                desc.type = internal_segment_desc::segment_type::other;
+
+        //now merge again adjecent "others"
+        vector<internal_segment_desc> merged_result;
+        for (const auto& desc : internal_result)
+        {
+            if (not merged_result.empty() && desc.type == internal_segment_desc::segment_type::other && merged_result.back().type == internal_segment_desc::segment_type::other)
+                merged_result.back().size += desc.size;
+            else
+                merged_result.emplace_back(desc);
+        }
+        internal_result = std::move(merged_result);
         std::size_t mol_id = 1;
         std::size_t wat_id = 1;
         std::size_t other_id = 1;
